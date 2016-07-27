@@ -1,0 +1,43 @@
+FROM jupyter/jupyterhub:latest
+
+MAINTAINER Jessica Hamrick <jhamrick@berkeley.edu>
+
+# We need to update pip, otherwise the version of requests that
+# is installed by dockerspawner breaks things.
+# RUN pip3 install --upgrade pip
+
+# RUN add-apt-repository ppa:ubuntugis/ubuntugis-unstable
+RUN apt-get install -y software-properties-common
+# RUN add-apt-repository ppa:ubuntugis/ubuntugis-unstable
+
+ADD . /usr/local/src/gdal-docker/
+RUN apt-get update -y && \
+    apt-get install -y make && \
+    make -C /usr/local/src/gdal-docker install clean && \
+    apt-get purge -y make
+
+
+# Install psycopg2
+RUN apt-get update
+RUN apt-get -y install libpq-dev python-setuptools python-dev npm nodejs git python3-numpy python3-gdal python3-matplotlib python3-pandas
+RUN pip install psycopg2 notebook
+# RUN /usr/local/bin/pip2 install psycopg2 pyspatial
+
+
+
+# create /srv/jupyterhub_users directory (which is where we'll mount the userlist)
+# RUN mkdir /srv/jupyterhub_users
+
+# we need to expose ports for the hub api and for the proxy api
+EXPOSE 8080
+# EXPOSE 8001
+
+# environment variable for swarm
+# ENV DOCKER_HOST https://swarm:2375
+
+# RUN useradd jupyter -d /home/jupyter
+# RUN echo "jupyter:jupyter" | chpasswd
+# RUN echo -e "jupyter\njupyter"|passwd jupyter
+
+# run jupyterhub
+ENTRYPOINT ["jupyterhub", "-f", "/srv/jupyterhub_config/jupyterhub_config.py", "--no-ssl"]
