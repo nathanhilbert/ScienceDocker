@@ -1,0 +1,93 @@
+FROM ubuntu:16.04
+
+RUN apt-get update
+RUN apt-get -y install curl
+
+RUN cd /tmp && curl -sL https://deb.nodesource.com/setup_6.x | bash -
+
+RUN apt-get install -y nodejs
+
+RUN mkdir -p /var/local/urbisnode
+
+COPY ./urbisnode /var/local/urbisnode
+WORKDIR /var/local/urbisnode
+
+# RUN npm install
+
+# RUN npm install express
+
+RUN npm install -g bower
+
+RUN apt-get -y install git
+
+ENV GIT_DIR=/var/local/urbisnode
+
+# RUN bower install --allow-root
+
+RUN npm install -g nodemon
+
+ENV DEBUG=UrbIS
+ENV PORT=3002
+ENV NODE_PATH=/var/local/urbisnode/node_modules:$NODE_PATH
+
+# ENTRYPOINT ['']
+ENTRYPOINT ["node", "app.js"]
+
+
+
+
+
+
+
+
+
+
+FROM ubuntu:16.04
+
+# Update aptitude with new repo
+RUN apt-get update
+
+RUN apt-get -y install curl git
+
+RUN cd /tmp && curl -sL https://deb.nodesource.com/setup_6.x | bash -
+
+RUN apt-get install -y nodejs
+
+# Make ssh dir
+RUN mkdir /root/.ssh/
+
+# Copy over private key, and set permissions
+ADD ./id_rsa /root/.ssh/id_rsa
+RUN chmod 700 /root/.ssh/id_rsa
+RUN chown -R root:root /root/.ssh
+
+# Create known_hosts
+RUN touch /root/.ssh/known_hosts
+RUN echo "|1|tuUqRtgSVcC1PEmVb1jsSG02fGk=|Xd3z2feU9afUls7w4sKbjJe8NsQ= ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBJ9zlCUWN+GlAR0FmH3GpwSvPyNF6jSx8zDbers3qrOnRX4qA77QVPN8U61mwysNBOLqLy8rt9dmRtxk0UYnZYk=\n" >> /root/.ssh/known_hosts
+
+# Remove host checking
+RUN echo "Host bitbucket.org\n\tStrictHostKeyChecking no\n" >> /root/.ssh/config
+RUN echo "Host code-int.ornl.gov\n\tStrictHostKeyChecking no\n" >> /root/.ssh/config
+
+
+# Clone the conf files into the docker container
+RUN git clone git@code-int.ornl.gov:xs7/UrbIS.git /var/local/urbisnode
+
+WORKDIR /var/local/urbisnode
+
+RUN npm install
+
+RUN npm install -g bower
+
+# ENV GIT_DIR=/var/local/urbisnode
+
+RUN bower install --allow-root
+
+RUN npm install -g nodemon
+
+ENV DEBUG=UrbIS
+ENV PORT=3003
+ENV NODE_PATH=/var/local/urbisnode/node_modules:$NODE_PATH
+
+# ENTRYPOINT ['']
+# ENTRYPOINT ["npm", "start"]
