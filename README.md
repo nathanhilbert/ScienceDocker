@@ -4,8 +4,9 @@ UrbIS Docker
 **Getting Started**
  - Clone this repository
    - $ git clone .....
- - Sync the submodules that are needed
-   - $ git submodule update --recursive
+ - Sync the required repositories
+   - $ git clone git@code-int.ornl.gov:xs7/UrbIS.git urbisnode/urbisnode
+   - $ cd urbisnode/urbisnode && npm install && bower install && cd ../..
  - Install docker - there is a beta version that runs natively on windows and osx (linux is already supported).  You can also install the dockertoolkit that uses virtualbox for non-linux boxes
  - Build the containers
    - $ docker-compose build
